@@ -1,0 +1,234 @@
+---
+title: "Storm Analysis"
+author: Courtney Rowlands
+output: 
+  html_document:
+    keep_md: yes
+pdf_document: default
+  
+---
+## Storm Data Research
+### Synopsis: The basic goal of this assignment is to explore the NOAA Storm Database and answer some basic questions about severe weather events. I've created an R Markdown file that will explain and graphically display the answers to the following questions: 1. Across the US, which types of events are most harmful with respect to population health, and 2. Across the US, which types of events have the greatest economic consequences?
+
+<!-- rmarkdown v1 -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r download, include=FALSE}
+if (!file.exists("data")) {
+  dir.create("data")
+}
+
+fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2" ##testdata
+download.file(fileUrl,destfile="./data/repdata_data_StormData.csv.bz2")
+
+```
+
+```{r readData, cache=TRUE}
+fStorm <- read.csv(bzfile("data/repdata_data_StormData.csv.bz2"),sep=",",header=TRUE)
+```
+
+```{r convertDate, cache=TRUE}
+beginDate <- substr(fStorm$BGN_DATE,1,unlist(gregexpr(pattern=" ",fStorm$BGN_DATE))-1)
+beginDate <- as.Date(beginDate,format="%m/%d/%Y")
+
+```
+
+```{r dataFrame}
+fStorm <- cbind(fStorm,beginDate)
+```
+```{r fatalities}
+fatalities <- subset(fStorm,fStorm$FATALITIES > 0,select=c("EVTYPE","FATALITIES"))
+#consolidate
+fatalities <- aggregate(FATALITIES~EVTYPE,fatalities,FUN=sum)
+#sort by. desc
+fatalities <- fatalities[order(-fatalities[,2]),]
+fatalities <- head(fatalities,15)
+print(fatalities)
+#calc. total fatalities
+totalFatalities <- sum(fatalities$FATALITIES)
+print(c("Total Fatalities:",toString(totalFatalities)))
+```
+
+```{r injuries}
+injuries <- subset(fStorm,fStorm$INJURIES > 0,select=c("EVTYPE","INJURIES"))
+#consolidate
+injuries <- aggregate(INJURIES~EVTYPE,injuries,FUN=sum)
+#sort by desc.
+injuries <- injuries[order(-injuries[,2]),]
+injuries <- head(injuries,15)
+print(injuries)
+#calc. total injuries
+totalInjuries <- sum(injuries$INJURIES)
+print(c("Total Injuries:",toString(totalInjuries)))
+```
+
+
+```{r eventsYear}
+library(data.table)
+
+eventsPerYear <- table(year(beginDate))
+data.table(eventsPerYear)
+```
+
+```{r trimWhiteSpace}
+trimBgn  <- function (x) sub("^\\s+","",x)
+trimEnd <- function (x) sub("\\s+$","",x)
+trim <- function (x) gsub("^\\s+|\\s+$","",x)
+
+EVT <- sort(unique(trimBgn(fStorm$EVTYPE)))
+head(EVT,50)
+```
+```{r economicPROPDMGEXP}
+print(unique(fStorm$PROPDMGEXP))
+```
+
+```{r economicCROPDMGEXP}
+print(unique(fStorm$CROPDMGEXP))
+```
+
+```{r propertyDamage}
+exp  <- c("H", "K", "M", "B")
+mult <- c(100, 1000, 1000000, 1000000000)
+
+propertyDamage <- subset(fStorm,fStorm$PROPDMG > 0, select=c("PROPDMG","PROPDMGEXP"))
+colnames(propertyDamage) <- c("PropertyDamage","PropertyDamageExp")
+head(propertyDamage)
+indx <- which(!(toupper(propertyDamage$PropertyDamageExp)=="B")
+              &!(toupper(propertyDamage$PropertyDamageExp)=="H")
+              &!(toupper(propertyDamage$PropertyDamageExp)=="K")
+              &!(toupper(propertyDamage$PropertyDamageExp)=="M"))
+propertyDamage <- propertyDamage[indx,]
+
+excludeBHKM <- sum(propertyDamage$PropertyDamage,na.rm=TRUE)
+print(c("Property Damage without codes B, H, K, or M:",toString(excludeBHKM)))
+
+##subset data to select non-zero
+propertyDamage <- subset(fStorm,fStorm$PROPDMG > 0, 
+                         select=c("EVTYPE","PROPDMG","PROPDMGEXP"))
+
+##create multiplier and vectors 
+multiplierDmg <- integer(dim(propertyDamage)[1])
+numDmgVal <- numeric(dim(propertyDamage)[1])
+propertyDamage <- cbind(propertyDamage,multiplierDmg)
+propertyDamage <- cbind(propertyDamage,numDmgVal)
+
+#generate multiplier
+for (i in 1:4){
+    index <- which(toupper(propertyDamage$PROPDMGEXP) == exp[i])
+    propertyDamage$multiplierDmg[index] <- mult[i]
+} 
+
+#Property Damage $$ amounts
+propertyDamage$numDmgVal <- propertyDamage$PROPDMG * propertyDamage$multiplierDmg
+
+#consolidate
+propertyDamage <- aggregate(numDmgVal ~ EVTYPE,propertyDamage,FUN=sum)
+propertyDamage <- propertyDamage[propertyDamage$numDmgVal > 0,]
+
+#sort desc.
+propertyDamage <- propertyDamage[order(-propertyDamage[,2]),]
+propertyDamage <- head(propertyDamage,15)
+
+totalPropDamages <- sum(propertyDamage$numDmgVal)
+paste(c("Total Property Damage $$:",formatC(totalPropDamages,big.mark=',',format='f')))
+```
+
+```{r cropDamage}
+cropDamage <- subset(fStorm,fStorm$CROPDMG > 0, select=c("CROPDMG","CROPDMGEXP"))
+colnames(cropDamage) <- c("CropDamage","CropDamageExp")
+head(cropDamage)
+indx <- which(!(toupper(cropDamage$CropDamageExp)=="B")
+              &!(toupper(cropDamage$CropDamageExp)=="H")
+              &!(toupper(cropDamage$CropDamageExp)=="K")
+              &!(toupper(cropDamage$CropDamageExp)=="M"))
+cropDamage <- cropDamage[indx,]
+excludeBHKM <- sum(cropDamage$CropDamage, na.rm=TRUE)
+
+
+print(c("Crop Damage without codes B, H, K, or M:",toString(excludeBHKM)))
+
+##subset data to select non-zero
+cropDamage <- subset(fStorm,fStorm$CROPDMG > 0, 
+                         select=c("EVTYPE","CROPDMG","CROPDMGEXP"))
+
+##create multiplier and vectors 
+multiplierDmg <- integer(dim(cropDamage)[1])
+numDmgVal <- numeric(dim(cropDamage)[1])
+cropDamage <- cbind(cropDamage,multiplierDmg)
+cropDamage <- cbind(cropDamage,numDmgVal)
+
+#generate multiplier
+for (i in 1:4){
+    index <- which(toupper(cropDamage$CROPDMGEXP) == exp[i])
+    cropDamage$multiplierDmg[index] <- mult[i]
+} 
+
+#Crop Damage $$ amounts
+cropDamage$numDmgVal <- cropDamage$CROPDMG * cropDamage$multiplierDmg
+
+#consolidate
+cropDamage <- aggregate(numDmgVal ~ EVTYPE,cropDamage,FUN=sum)
+cropDamage <- cropDamage[cropDamage$numDmgVal > 0,]
+
+#sort desc.
+cropDamage <- cropDamage[order(-cropDamage[,2]),]
+cropDamage <- head(cropDamage,15)
+cropDamage
+
+totalcropDamages <- sum(cropDamage$numDmgVal)
+paste(c("Total Crop Damage $$:",formatC(totalcropDamages,big.mark=',',format='f')))
+```
+# 
+# Results
+# 
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r eventsPerYearPlot}
+plot(eventsPerYear,type="l",
+     main="Fig. 1: Total Events (per year)",
+     xlab="Year",
+     ylab="Events",
+     col="darkgreen")
+```
+```{r injuriesPlot}
+injuriesPlot <- ggplot(data=injuries,aes(x=reorder(EVTYPE,-INJURIES),y=injuries$INJURIES)) + 
+  geom_bar(stat="identity",fill="lightblue",color="darkblue") + 
+  theme(axis.text.x=element_text(angle=45,hjust=1)) + 
+  labs(title="Fig. 2: Top 15 Events Causing Injuries",y="Injuries",x="Event Type")
+injuriesPlot
+
+```
+
+```{r fatalitiesPlot}
+fatalitiesPlot <- ggplot(data=fatalities,aes(x=reorder(EVTYPE, -FATALITIES),y=fatalities$FATALITIES)) + 
+  geom_bar(stat="identity",fill="lightgreen",color="darkgreen") + 
+  theme(axis.text.x=element_text(angle=45,hjust=1)) + 
+  labs(title="Fig. 3: Top 15 Events Causing Fatalities",y="Fatalities",x="Event Type")
+fatalitiesPlot
+```
+
+```{r propertyDamagePlot}
+propertyDamagePlot <- ggplot(data=propertyDamage,
+  aes(x=reorder(EVTYPE,-propertyDamage$numDmgVal),y=propertyDamage$numDmgVal)) + 
+  geom_bar(stat="identity",fill="cornsilk1",color="violetred4") + 
+  theme(axis.text.x=element_text(angle=45,hjust=1)) + 
+  labs(title="Fig. 3: Top 15 Events Causing Property Damage",y="Property Damage",x="Event Type")
+propertyDamagePlot
+```
+
+```{r cropDamagePlot}
+cropDamagePlot <- ggplot(data=cropDamage,
+  aes(x=reorder(EVTYPE,-cropDamage$numDmgVal),y=cropDamage$numDmgVal)) + 
+  geom_bar(stat="identity",fill="thistle2",color="gray23") + 
+  theme(axis.text.x=element_text(angle=45,hjust=1)) + 
+  labs(title="Fig. 4: Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
+cropDamagePlot
+```
