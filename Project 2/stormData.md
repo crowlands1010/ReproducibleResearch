@@ -476,21 +476,11 @@ library(dplyr)
 ```
 
 ```r
-plot(eventsPerYear,type="l",
-     main="Fig. 1: Total Events (per year)",
-     xlab="Year",
-     ylab="Events",
-     col="darkgreen")
-```
-
-![plot of chunk eventsPerYear](figure/eventsPerYear-1.png)
-
-
-```r
 injuriesPlot <- ggplot(data=injuries,aes(x=reorder(EVTYPE,-INJURIES),y=injuries$INJURIES)) + 
   geom_bar(stat="identity",fill="lightblue",color="darkblue") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Top 15 Events Causing Injuries",y="Injuries",x="Event Type")
+  labs(title="Figure 1: Top 15 Events Causing Injuries 
+       & Fatalities",y="Injuries",x=" ")
 ```
 
 
@@ -498,7 +488,7 @@ injuriesPlot <- ggplot(data=injuries,aes(x=reorder(EVTYPE,-INJURIES),y=injuries$
 fatalitiesPlot <- ggplot(data=fatalities,aes(x=reorder(EVTYPE, -FATALITIES),y=fatalities$FATALITIES)) + 
   geom_bar(stat="identity",fill="lightgreen",color="darkgreen") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Top 15 Events Causing Fatalities",y="Fatalities",x="Event Type")
+  labs(y="Fatalities",x="Event Type")
 ```
 
 
@@ -525,7 +515,8 @@ propertyDamagePlot <- ggplot(data=propertyDamage,
   aes(x=reorder(EVTYPE,-propertyDamage$numDmgVal),y=propertyDamage$numDmgVal)) + 
   geom_bar(stat="identity",fill="cornsilk1",color="violetred4") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Top 15 Events Causing Property Damage",y="Property Damage",x="Event Type")
+  labs(title="Figure 2: Top 15 Events Causing Property Damage 
+       & Crop Damage",y="Property Damage",x="")
 ```
 
 
@@ -534,7 +525,7 @@ cropDamagePlot <- ggplot(data=cropDamage,
   aes(x=reorder(EVTYPE,-cropDamage$numDmgVal),y=cropDamage$numDmgVal)) + 
   geom_bar(stat="identity",fill="thistle2",color="gray23") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
+  labs(y="Crop Damage",x="Event Type")
 ```
 
 ```r
