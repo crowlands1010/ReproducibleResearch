@@ -43,13 +43,15 @@ fStorm <- read.csv(bzfile("data/repdata_data_StormData.csv.bz2"),sep=",",header=
 beginDate <- substr(fStorm$BGN_DATE,1,unlist(gregexpr(pattern=" ",fStorm$BGN_DATE))-1)
 beginDate <- as.Date(beginDate,format="%m/%d/%Y")
 ```
-
+# 
+# setup and bind dataframe
+# 
 
 ```r
 fStorm <- cbind(fStorm,beginDate)
 ```
 # 
-# Results
+# Results: Data for total fatalities
 # 
 
 ```r
@@ -90,7 +92,9 @@ print(c("Total Fatalities:",toString(totalFatalities)))
 ```
 ## [1] "Total Fatalities:" "12956"
 ```
-
+# 
+# Results: Data for total injuries
+# 
 
 ```r
 injuries <- subset(fStorm,fStorm$INJURIES > 0,select=c("EVTYPE","INJURIES"))
@@ -131,7 +135,9 @@ print(c("Total Injuries:",toString(totalInjuries)))
 ## [1] "Total Injuries:" "131213"
 ```
 
-
+# 
+# Total events per year
+# 
 
 ```r
 library(data.table)
@@ -206,7 +212,9 @@ data.table(eventsPerYear)
 ## 62: 2011 62174
 ##       V1     N
 ```
-
+# 
+# get rid of white space.
+# 
 
 ```r
 trimBgn  <- function (x) sub("^\\s+","",x)
@@ -428,18 +436,25 @@ paste(c("Total Crop Damage $$:",formatC(totalcropDamages,big.mark=',',format='f'
 ## [1] "Total Crop Damage $$:" "44,966,946,750.0000"
 ```
 # 
-# Results
+# Results: Graphs
 # 
 
 
 ```r
 library(ggplot2)
+library(gridExtra)
 library(dplyr)
 ```
 
 ```
 ## 
 ## Attaching package: 'dplyr'
+```
+
+```
+## The following object is masked from 'package:gridExtra':
+## 
+##     combine
 ```
 
 ```
@@ -460,7 +475,6 @@ library(dplyr)
 ##     intersect, setdiff, setequal, union
 ```
 
-
 ```r
 plot(eventsPerYear,type="l",
      main="Fig. 1: Total Events (per year)",
@@ -469,28 +483,41 @@ plot(eventsPerYear,type="l",
      col="darkgreen")
 ```
 
-![plot of chunk eventsPerYearPlot](figure/eventsPerYearPlot-1.png)
+![plot of chunk eventsPerYear](figure/eventsPerYear-1.png)
+
 
 ```r
 injuriesPlot <- ggplot(data=injuries,aes(x=reorder(EVTYPE,-INJURIES),y=injuries$INJURIES)) + 
   geom_bar(stat="identity",fill="lightblue",color="darkblue") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 2: Top 15 Events Causing Injuries",y="Injuries",x="Event Type")
-injuriesPlot
+  labs(title="Top 15 Events Causing Injuries",y="Injuries",x="Event Type")
 ```
-
-![plot of chunk injuriesPlot](figure/injuriesPlot-1.png)
 
 
 ```r
 fatalitiesPlot <- ggplot(data=fatalities,aes(x=reorder(EVTYPE, -FATALITIES),y=fatalities$FATALITIES)) + 
   geom_bar(stat="identity",fill="lightgreen",color="darkgreen") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 3: Top 15 Events Causing Fatalities",y="Fatalities",x="Event Type")
-fatalitiesPlot
+  labs(title="Top 15 Events Causing Fatalities",y="Fatalities",x="Event Type")
 ```
 
-![plot of chunk fatalitiesPlot](figure/fatalitiesPlot-1.png)
+
+```r
+populationHealth <- grid.arrange(injuriesPlot,fatalitiesPlot)
+```
+
+![plot of chunk injuriesFatalities](figure/injuriesFatalities-1.png)
+
+```r
+print(populationHealth)
+```
+
+```
+## TableGrob (2 x 1) "arrange": 2 grobs
+##   z     cells    name           grob
+## 1 1 (1-1,1-1) arrange gtable[layout]
+## 2 2 (2-2,1-1) arrange gtable[layout]
+```
 
 
 ```r
@@ -498,11 +525,8 @@ propertyDamagePlot <- ggplot(data=propertyDamage,
   aes(x=reorder(EVTYPE,-propertyDamage$numDmgVal),y=propertyDamage$numDmgVal)) + 
   geom_bar(stat="identity",fill="cornsilk1",color="violetred4") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 3: Top 15 Events Causing Property Damage",y="Property Damage",x="Event Type")
-propertyDamagePlot
+  labs(title="Top 15 Events Causing Property Damage",y="Property Damage",x="Event Type")
 ```
-
-![plot of chunk propertyDamagePlot](figure/propertyDamagePlot-1.png)
 
 
 ```r
@@ -510,8 +534,22 @@ cropDamagePlot <- ggplot(data=cropDamage,
   aes(x=reorder(EVTYPE,-cropDamage$numDmgVal),y=cropDamage$numDmgVal)) + 
   geom_bar(stat="identity",fill="thistle2",color="gray23") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 4: Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
-cropDamagePlot
+  labs(title="Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
 ```
 
-![plot of chunk cropDamagePlot](figure/cropDamagePlot-1.png)
+```r
+damages <- grid.arrange(propertyDamagePlot,cropDamagePlot)
+```
+
+![plot of chunk damagesPlot](figure/damagesPlot-1.png)
+
+```r
+print(damages)
+```
+
+```
+## TableGrob (2 x 1) "arrange": 2 grobs
+##   z     cells    name           grob
+## 1 1 (1-1,1-1) arrange gtable[layout]
+## 2 2 (2-2,1-1) arrange gtable[layout]
+```

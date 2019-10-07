@@ -44,12 +44,14 @@ beginDate <- substr(fStorm$BGN_DATE,1,unlist(gregexpr(pattern=" ",fStorm$BGN_DAT
 beginDate <- as.Date(beginDate,format="%m/%d/%Y")
 
 ```
-
+# 
+# setup and bind dataframe
+# 
 ```{r dataFrame}
 fStorm <- cbind(fStorm,beginDate)
 ```
 # 
-# Results
+# Results: Data for total fatalities
 # 
 ```{r fatalities}
 fatalities <- subset(fStorm,fStorm$FATALITIES > 0,select=c("EVTYPE","FATALITIES"))
@@ -63,7 +65,9 @@ print(fatalities)
 totalFatalities <- sum(fatalities$FATALITIES)
 print(c("Total Fatalities:",toString(totalFatalities)))
 ```
-
+# 
+# Results: Data for total injuries
+# 
 ```{r injuries}
 injuries <- subset(fStorm,fStorm$INJURIES > 0,select=c("EVTYPE","INJURIES"))
 #consolidate
@@ -77,14 +81,18 @@ totalInjuries <- sum(injuries$INJURIES)
 print(c("Total Injuries:",toString(totalInjuries)))
 ```
 
-
+# 
+# Total events per year
+# 
 ```{r eventsYear}
 library(data.table)
 
 eventsPerYear <- table(year(beginDate))
 data.table(eventsPerYear)
 ```
-
+# 
+# get rid of white space.
+# 
 ```{r trimWhiteSpace}
 trimBgn  <- function (x) sub("^\\s+","",x)
 trimEnd <- function (x) sub("\\s+$","",x)
@@ -194,7 +202,7 @@ totalcropDamages <- sum(cropDamage$numDmgVal)
 paste(c("Total Crop Damage $$:",formatC(totalcropDamages,big.mark=',',format='f')))
 ```
 # 
-# Results
+# Results: Graphs
 # 
 
 ```{r}
@@ -225,7 +233,8 @@ fatalitiesPlot <- ggplot(data=fatalities,aes(x=reorder(EVTYPE, -FATALITIES),y=fa
 ```
 
 ```{r injuriesFatalities}
-grid.arrange(injuriesPlot,fatalitiesPlot)
+populationHealth <- grid.arrange(injuriesPlot,fatalitiesPlot)
+print(populationHealth)
 ```
 
 ```{r propertyDamagePlot}
@@ -245,6 +254,7 @@ cropDamagePlot <- ggplot(data=cropDamage,
   labs(title="Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
 
 ```
-```{r}
-grid.arrange(propertyDamagePlot,cropDamagePlot)
+```{r damagesPlot}
+damages <- grid.arrange(propertyDamagePlot,cropDamagePlot)
+print(damages)
 ```
