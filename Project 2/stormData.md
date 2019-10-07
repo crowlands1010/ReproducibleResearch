@@ -14,14 +14,30 @@ pdf_document: default
 
 
 
+# 
+# Load the data. 
+# 
 
+```r
+if (!file.exists("data")) {
+  dir.create("data")
+}
 
+fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2" ##testdata
+download.file(fileUrl,destfile="./data/repdata_data_StormData.csv.bz2")
+```
 
+# 
+# Read the data.
+# 
 
 ```r
 fStorm <- read.csv(bzfile("data/repdata_data_StormData.csv.bz2"),sep=",",header=TRUE)
 ```
 
+# 
+# Convert date
+# 
 
 ```r
 beginDate <- substr(fStorm$BGN_DATE,1,unlist(gregexpr(pattern=" ",fStorm$BGN_DATE))-1)
@@ -32,6 +48,9 @@ beginDate <- as.Date(beginDate,format="%m/%d/%Y")
 ```r
 fStorm <- cbind(fStorm,beginDate)
 ```
+# 
+# Results
+# 
 
 ```r
 fatalities <- subset(fStorm,fStorm$FATALITIES > 0,select=c("EVTYPE","FATALITIES"))

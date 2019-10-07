@@ -16,8 +16,10 @@ pdf_document: default
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-```{r download, include=FALSE}
+# 
+# Load the data. 
+# 
+```{r download}
 if (!file.exists("data")) {
   dir.create("data")
 }
@@ -27,10 +29,16 @@ download.file(fileUrl,destfile="./data/repdata_data_StormData.csv.bz2")
 
 ```
 
+# 
+# Read the data.
+# 
 ```{r readData, cache=TRUE}
 fStorm <- read.csv(bzfile("data/repdata_data_StormData.csv.bz2"),sep=",",header=TRUE)
 ```
 
+# 
+# Convert date
+# 
 ```{r convertDate, cache=TRUE}
 beginDate <- substr(fStorm$BGN_DATE,1,unlist(gregexpr(pattern=" ",fStorm$BGN_DATE))-1)
 beginDate <- as.Date(beginDate,format="%m/%d/%Y")
@@ -40,6 +48,9 @@ beginDate <- as.Date(beginDate,format="%m/%d/%Y")
 ```{r dataFrame}
 fStorm <- cbind(fStorm,beginDate)
 ```
+# 
+# Results
+# 
 ```{r fatalities}
 fatalities <- subset(fStorm,fStorm$FATALITIES > 0,select=c("EVTYPE","FATALITIES"))
 #consolidate
@@ -188,31 +199,33 @@ paste(c("Total Crop Damage $$:",formatC(totalcropDamages,big.mark=',',format='f'
 
 ```{r}
 library(ggplot2)
+library(gridExtra)
 library(dplyr)
 ```
-
-```{r eventsPerYearPlot}
+```{r eventsPerYear}
 plot(eventsPerYear,type="l",
      main="Fig. 1: Total Events (per year)",
      xlab="Year",
      ylab="Events",
      col="darkgreen")
 ```
+
 ```{r injuriesPlot}
 injuriesPlot <- ggplot(data=injuries,aes(x=reorder(EVTYPE,-INJURIES),y=injuries$INJURIES)) + 
   geom_bar(stat="identity",fill="lightblue",color="darkblue") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 2: Top 15 Events Causing Injuries",y="Injuries",x="Event Type")
-injuriesPlot
-
+  labs(title="Top 15 Events Causing Injuries",y="Injuries",x="Event Type")
 ```
 
 ```{r fatalitiesPlot}
 fatalitiesPlot <- ggplot(data=fatalities,aes(x=reorder(EVTYPE, -FATALITIES),y=fatalities$FATALITIES)) + 
   geom_bar(stat="identity",fill="lightgreen",color="darkgreen") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 3: Top 15 Events Causing Fatalities",y="Fatalities",x="Event Type")
-fatalitiesPlot
+  labs(title="Top 15 Events Causing Fatalities",y="Fatalities",x="Event Type")
+```
+
+```{r injuriesFatalities}
+grid.arrange(injuriesPlot,fatalitiesPlot)
 ```
 
 ```{r propertyDamagePlot}
@@ -220,8 +233,8 @@ propertyDamagePlot <- ggplot(data=propertyDamage,
   aes(x=reorder(EVTYPE,-propertyDamage$numDmgVal),y=propertyDamage$numDmgVal)) + 
   geom_bar(stat="identity",fill="cornsilk1",color="violetred4") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 3: Top 15 Events Causing Property Damage",y="Property Damage",x="Event Type")
-propertyDamagePlot
+  labs(title="Top 15 Events Causing Property Damage",y="Property Damage",x="Event Type")
+
 ```
 
 ```{r cropDamagePlot}
@@ -229,6 +242,9 @@ cropDamagePlot <- ggplot(data=cropDamage,
   aes(x=reorder(EVTYPE,-cropDamage$numDmgVal),y=cropDamage$numDmgVal)) + 
   geom_bar(stat="identity",fill="thistle2",color="gray23") + 
   theme(axis.text.x=element_text(angle=45,hjust=1)) + 
-  labs(title="Fig. 4: Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
-cropDamagePlot
+  labs(title="Top 15 Events Causing Crop Damage",y="Crop Damage",x="Event Type")
+
+```
+```{r}
+grid.arrange(propertyDamagePlot,cropDamagePlot)
 ```

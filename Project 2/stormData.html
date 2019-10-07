@@ -196,8 +196,22 @@ pdf_document: default</p>
 
 <!-- rmarkdown v1 -->
 
+<h1>Load the data.</h1>
+
+<pre><code class="r">if (!file.exists(&quot;data&quot;)) {
+  dir.create(&quot;data&quot;)
+}
+
+fileUrl &lt;- &quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot; ##testdata
+download.file(fileUrl,destfile=&quot;./data/repdata_data_StormData.csv.bz2&quot;)
+</code></pre>
+
+<h1>Read the data.</h1>
+
 <pre><code class="r">fStorm &lt;- read.csv(bzfile(&quot;data/repdata_data_StormData.csv.bz2&quot;),sep=&quot;,&quot;,header=TRUE)
 </code></pre>
+
+<h1>Convert date</h1>
 
 <pre><code class="r">beginDate &lt;- substr(fStorm$BGN_DATE,1,unlist(gregexpr(pattern=&quot; &quot;,fStorm$BGN_DATE))-1)
 beginDate &lt;- as.Date(beginDate,format=&quot;%m/%d/%Y&quot;)
@@ -205,6 +219,8 @@ beginDate &lt;- as.Date(beginDate,format=&quot;%m/%d/%Y&quot;)
 
 <pre><code class="r">fStorm &lt;- cbind(fStorm,beginDate)
 </code></pre>
+
+<h1>Results</h1>
 
 <pre><code class="r">fatalities &lt;- subset(fStorm,fStorm$FATALITIES &gt; 0,select=c(&quot;EVTYPE&quot;,&quot;FATALITIES&quot;))
 #consolidate
