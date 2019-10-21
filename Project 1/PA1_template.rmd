@@ -1,4 +1,3 @@
-<!-- rmarkdown v1 -->
 ---
 title: "PA1_template.Rmd"
 author: "Courtney Rowlands"

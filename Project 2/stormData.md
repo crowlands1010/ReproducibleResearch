@@ -10,7 +10,6 @@ pdf_document: default
 ## Storm Data Research
 ### Synopsis: The basic goal of this assignment is to explore the NOAA Storm Database and answer some basic questions about severe weather events. I've created an R Markdown file that will explain and graphically display the answers to the following questions: 1. Across the US, which types of events are most harmful with respect to population health, and 2. Across the US, which types of events have the greatest economic consequences?
 
-<!-- rmarkdown v1 -->
 
 
 
@@ -464,6 +463,13 @@ library(dplyr)
 ```
 
 ```
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+```
+
+```
 ## The following objects are masked from 'package:stats':
 ## 
 ##     filter, lag
@@ -496,7 +502,7 @@ fatalitiesPlot <- ggplot(data=fatalities,aes(x=reorder(EVTYPE, -FATALITIES),y=fa
 populationHealth <- grid.arrange(injuriesPlot,fatalitiesPlot)
 ```
 
-![plot of chunk injuriesFatalities](figure/injuriesFatalities-1.png)
+![](stormData_files/figure-html/injuriesFatalities-1.png)<!-- -->
 
 ```r
 print(populationHealth)
@@ -532,7 +538,7 @@ cropDamagePlot <- ggplot(data=cropDamage,
 damages <- grid.arrange(propertyDamagePlot,cropDamagePlot)
 ```
 
-![plot of chunk damagesPlot](figure/damagesPlot-1.png)
+![](stormData_files/figure-html/damagesPlot-1.png)<!-- -->
 
 ```r
 print(damages)

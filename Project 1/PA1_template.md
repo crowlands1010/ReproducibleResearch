@@ -1,4 +1,3 @@
-<!-- rmarkdown v1 -->
 ---
 title: "PA1_template.Rmd"
 author: "Courtney Rowlands"
@@ -35,7 +34,7 @@ histogram(totalSteps$steps,breaks=20,main="Total Steps (per day)",
                                          "#555555","#717171","#8D8D8D","#AAAAAA","#C6C6C6","#E2E2E2","#FFFFFF"))
 ```
 
-![plot of chunk stepsHistogram](figure/stepsHistogram-1.png)
+![](PA1_template_files/figure-html/stepsHistogram-1.png)<!-- -->
 
 
 ```r
@@ -69,7 +68,7 @@ plot(dailyPattern$interval,dailyPattern$steps,type="l",
      main="Total Steps (5-minute intervals)",xlab="5-Minute Interval", ylab="Steps")
 ```
 
-![plot of chunk timeSeriesPlot](figure/timeSeriesPlot-1.png)
+![](PA1_template_files/figure-html/timeSeriesPlot-1.png)<!-- -->
 
 
 ```r
@@ -135,7 +134,7 @@ histogram(newSteps$steps,breaks=20,main="Total Steps (per day)",
                                          "#555555","#717171","#8D8D8D","#AAAAAA","#C6C6C6","#E2E2E2","#FFFFFF"))
 ```
 
-![plot of chunk newStepsHistogram](figure/newStepsHistogram-1.png)
+![](PA1_template_files/figure-html/newStepsHistogram-1.png)<!-- -->
   
 
 ```r
@@ -156,5 +155,5 @@ xyplot(determinePattern$steps ~ determinePattern$interval|determinePattern$weeke
      col=c("#1C1C1C","#383838"))
 ```
 
-![plot of chunk weekend](figure/weekend-1.png)
+![](PA1_template_files/figure-html/weekend-1.png)<!-- -->
 
